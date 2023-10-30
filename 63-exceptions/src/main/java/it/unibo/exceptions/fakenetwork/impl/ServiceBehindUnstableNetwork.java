@@ -1,6 +1,7 @@
 package it.unibo.exceptions.fakenetwork.impl;
 
 import it.unibo.exceptions.arithmetic.ArithmeticService;
+import it.unibo.exceptions.fakenetwork.Exceptions.NetworkException;
 import it.unibo.exceptions.fakenetwork.api.NetworkComponent;
 
 import java.io.IOException;
@@ -18,8 +19,13 @@ import static it.unibo.exceptions.arithmetic.ArithmeticUtil.nullIfNumberOrExcept
  */
 public final class ServiceBehindUnstableNetwork implements NetworkComponent {
     private final double failProbability;
+
+    private static final int LOW_BOUND = 0;
+    private static final int HIGH_BOUND = 1;
+
     private final RandomGenerator randomGenerator;
     private final List<String> commandQueue = new ArrayList<>();
+    
 
     /**
      * @param failProbability the probability that a network communication fails
@@ -29,7 +35,9 @@ public final class ServiceBehindUnstableNetwork implements NetworkComponent {
         /*
          * The probability should be in [0, 1[!
          */
+        this.checkBounds(failProbability);
         this.failProbability = failProbability;
+        
         randomGenerator = new Random(randomSeed);
     }
 
@@ -47,6 +55,12 @@ public final class ServiceBehindUnstableNetwork implements NetworkComponent {
         this(0.5);
     }
 
+    private void checkBounds(final double val) {
+        if(val < LOW_BOUND || val >= HIGH_BOUND){
+            throw new IllegalArgumentException("Errato, inserire un valore compreso tra [0, 1)");
+        }
+    }
+
     @Override
     public void sendData(final String data) throws IOException {
         accessTheNetwork(data);
@@ -55,8 +69,9 @@ public final class ServiceBehindUnstableNetwork implements NetworkComponent {
             commandQueue.add(data);
         } else {
             final var message = data + " is not a valid keyword (allowed: " + KEYWORDS + "), nor is a number";
-            System.out.println(message);
             commandQueue.clear();
+            throw new IllegalArgumentException(message);
+            
             /*
              * This method, in this point, should throw an IllegalStateException.
              * Its cause, however, is the previous NumberFormatException.
@@ -78,9 +93,12 @@ public final class ServiceBehindUnstableNetwork implements NetworkComponent {
     }
 
     private void accessTheNetwork(final String message) throws IOException {
+        
         if (randomGenerator.nextDouble() < failProbability) {
-            throw new IOException("Generic I/O error");
+            new NetworkException();
         }
+        
+        
     }
 
 }

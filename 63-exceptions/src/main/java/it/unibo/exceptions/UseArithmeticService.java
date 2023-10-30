@@ -3,6 +3,7 @@ package it.unibo.exceptions;
 import it.unibo.exceptions.fakenetwork.api.NetworkComponent;
 import it.unibo.exceptions.fakenetwork.impl.ServiceBehindUnstableNetwork;
 
+import java.io.IOException;
 import java.io.PrintStream;
 
 import static it.unibo.exceptions.arithmetic.ArithmeticService.DIVIDED;
@@ -29,23 +30,38 @@ public final class UseArithmeticService {
             throw new AssertionError("Expected an IllegalArgumentException, but no Exception was thrown");
         } catch (final IllegalArgumentException e) {
             LOG.println("Correct: a service with 100% failures cannot be created.");
+        } finally {
+            final NetworkComponent server = new ServiceBehindUnstableNetwork();
+            assertComputeResult(server, "1", "1");
+            assertComputeResult(server, "2", "1", PLUS, "1");
+            assertComputeResult(server, "9", "1", PLUS, "2", TIMES, "4.0");
+            assertComputeResult(server, "0", "1", PLUS, "2", DIVIDED, "4.0", MINUS, "1.5");
+            assertThrowsException(server, IllegalArgumentException.class, "1", "power", "2");
+            assertThrowsException(server, IllegalArgumentException.class, "1", TIMES, "NaN");
+            assertThrowsException(server, IllegalStateException.class, "1", TIMES, PLUS);
+            assertThrowsException(server, IllegalStateException.class, "1", TIMES, PLUS, "2");
+        
         }
-        final NetworkComponent server = new ServiceBehindUnstableNetwork();
-        assertComputeResult(server, "1", "1");
-        assertComputeResult(server, "2", "1", PLUS, "1");
-        assertComputeResult(server, "9", "1", PLUS, "2", TIMES, "4.0");
-        assertComputeResult(server, "0", "1", PLUS, "2", DIVIDED, "4.0", MINUS, "1.5");
-        assertThrowsException(server, IllegalArgumentException.class, "1", "power", "2");
-        assertThrowsException(server, IllegalArgumentException.class, "1", TIMES, "NaN");
-        assertThrowsException(server, IllegalStateException.class, "1", TIMES, PLUS);
-        assertThrowsException(server, IllegalStateException.class, "1", TIMES, PLUS, "2");
+        
     }
+        
 
     private static void retrySendOnNetworkError(final NetworkComponent server, final String message) {
         /*
          * This method should re-try to send message to the provided server, catching all IOExceptions,
          * until it succeeds.
          */
+        boolean fails = true;
+        do{
+            try {
+                fails = false;
+                server.sendData(message);
+            } catch (IOException e) {
+                System.out.println("Message_error. " + e.getMessage());
+                fails = true;
+            } 
+        }while(fails);
+        
     }
 
     private static String retryReceiveOnNetworkError(final NetworkComponent server) {
@@ -53,7 +69,18 @@ public final class UseArithmeticService {
          * This method should re-try to retrieve information from the provided server, catching all IOExceptions,
          * until it succeeds.
          */
-        return null;
+        boolean fails = true;
+        String returnMessage = "";
+        do{
+            try {
+                fails = false;
+                returnMessage = server.receiveResponse();
+            } catch (IOException e) {
+                System.out.println("Message_error. " + e.getMessage());
+                fails = true;
+            } 
+        }while(fails);
+        return returnMessage;
     }
 
     private static void assertEqualsAsDouble(final String expected, final String actual) {
