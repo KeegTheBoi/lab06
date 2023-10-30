@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 /**
  * 
@@ -36,7 +37,8 @@ public final class SocialNetworkUserImpl<U extends User> extends UserImpl implem
      * In order to save the people followed by a user organized in groups, adopt
      * a generic-type Map:  think of what type of keys and values would best suit the requirements
      */
-
+    private static final short DEFAULT_USER_AGE = -1;
+    private final Map<String, List<U>> groupNetwork;
     /*
      * [CONSTRUCTORS]
      *
@@ -62,13 +64,16 @@ public final class SocialNetworkUserImpl<U extends User> extends UserImpl implem
      *            application
      */
     public SocialNetworkUserImpl(final String name, final String surname, final String user, final int userAge) {
-        super(null, null, null, 0);
+        super(name, surname, user, userAge);
+        groupNetwork = new HashMap<>();
     }
 
     /*
      * 2) Define a further constructor where the age defaults to -1
      */
-
+    public SocialNetworkUserImpl(final String name, final String surname, final String user) {
+        this(name, surname, user, DEFAULT_USER_AGE);
+    }
     /*
      * [METHODS]
      *
@@ -76,7 +81,11 @@ public final class SocialNetworkUserImpl<U extends User> extends UserImpl implem
      */
     @Override
     public boolean addFollowedUser(final String circle, final U user) {
-        return false;
+        if(!this.groupNetwork.containsKey(circle)){
+            this.groupNetwork.put(circle, new ArrayList<>(List.of(user)));
+            return true;
+        }
+        return this.groupNetwork.get(circle).add(user);      
     }
 
     /**
@@ -86,11 +95,15 @@ public final class SocialNetworkUserImpl<U extends User> extends UserImpl implem
      */
     @Override
     public Collection<U> getFollowedUsersInGroup(final String groupName) {
-        return null;
+        return new HashSet<>(this.groupNetwork.getOrDefault(groupName, Collections.emptyList()));
     }
 
     @Override
     public List<U> getFollowedUsers() {
-        return null;
+        final List<U> followingList = new ArrayList<>();
+        for (Entry<String, List<U>> u : this.groupNetwork.entrySet()) {
+            followingList.addAll(u.getValue());
+        }
+        return followingList;
     }
 }
