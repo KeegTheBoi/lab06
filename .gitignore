@@ -2,3 +2,6 @@ bin/
 build/
 .metals/
 .vscode/
+.gradle
+metals*
+*.json
