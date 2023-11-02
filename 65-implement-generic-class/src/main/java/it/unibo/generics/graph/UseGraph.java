@@ -1,5 +1,6 @@
 package it.unibo.generics.graph;
 
+import it.unibo.generics.graph.Impl.DepthFirstSearch;
 import it.unibo.generics.graph.Impl.GraphImpl;
 import it.unibo.generics.graph.api.Graph;
 
@@ -23,7 +24,7 @@ public final class UseGraph {
         /*
          * Test your graph implementation(s) by calling testGraph
          */
-        testGraph(new GraphImpl<>());
+        testGraph(new GraphImpl<>(new DepthFirstSearch<>()));
     }
 
     private static void testGraph(final Graph<String> graph) {
@@ -38,14 +39,16 @@ public final class UseGraph {
         graph.addEdge("d", "e");
         graph.addEdge("c", "a");
         graph.addEdge("e", "a");
+
+
         /*
          * Should be ["a","b","c","d","e"], in any order
          */
-        assertIsAnyOf(graph.nodeSet(), Set.of(splitOnWhiteSpace("a b c d e")));
+         assertIsAnyOf(graph.nodeSet(), Set.of(splitOnWhiteSpace("a b c d e")));
         /*
          * ["d","a"], in any order
          */
-        assertIsAnyOf(graph.linkedNodes("c"), Set.of(splitOnWhiteSpace("a d")));
+       assertIsAnyOf(graph.linkedNodes("c"), Set.of(splitOnWhiteSpace("a d")));
         /*
          * Either the path b,c,a or b,c,d,e,a
          */
