@@ -6,7 +6,6 @@ package it.unibo.collections.social.impl;
 import it.unibo.collections.social.api.SocialNetworkUser;
 import it.unibo.collections.social.api.User;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -14,7 +13,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 
 /**
  * 
@@ -38,7 +36,7 @@ public final class SocialNetworkUserImpl<U extends User> extends UserImpl implem
      * a generic-type Map:  think of what type of keys and values would best suit the requirements
      */
     private static final short DEFAULT_USER_AGE = -1;
-    private final Map<String, List<U>> groupNetwork;
+    private final Map<String, Set<U>> groupNetwork;
     /*
      * [CONSTRUCTORS]
      *
@@ -82,7 +80,7 @@ public final class SocialNetworkUserImpl<U extends User> extends UserImpl implem
     @Override
     public boolean addFollowedUser(final String circle, final U user) {
         if(!this.groupNetwork.containsKey(circle)){
-            this.groupNetwork.put(circle, new ArrayList<>(List.of(user)));
+            this.groupNetwork.put(circle, new HashSet<>(Collections.singleton(user)));
             return true;
         }
         return this.groupNetwork.get(circle).add(user);      
@@ -95,15 +93,15 @@ public final class SocialNetworkUserImpl<U extends User> extends UserImpl implem
      */
     @Override
     public Collection<U> getFollowedUsersInGroup(final String groupName) {
-        return new HashSet<>(this.groupNetwork.getOrDefault(groupName, Collections.emptyList()));
+        return new HashSet<>(this.groupNetwork.getOrDefault(groupName, Collections.emptySet()));
     }
 
     @Override
     public List<U> getFollowedUsers() {
-        final List<U> followingList = new ArrayList<>();
-        for (Entry<String, List<U>> u : this.groupNetwork.entrySet()) {
-            followingList.addAll(u.getValue());
+        final Set<U> followingList = new HashSet<>();
+        for (Set<U> u : this.groupNetwork.values()) {
+            followingList.addAll(u);
         }
-        return followingList;
+        return List.copyOf(followingList);
     }
 }
