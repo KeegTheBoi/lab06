@@ -31,7 +31,7 @@ public class GraphImpl<N> implements Graph<N> {
 
     public void addEdge(N source, N target) {
         if(this.nodeGraph.containsKey(source)){
-            this.nodeGraph.get(source).add(target);
+           this.nodeGraph.get(source).add(target);
         }        
     }
 

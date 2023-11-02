@@ -13,23 +13,26 @@ public class BreadthFirstSearch<N> extends AbstractSearch<N> {
     
     public List<N> getPath(Graph<N> g, N source, N target) {
         
-        final Queue<N> queue = new PriorityQueue<>();
+        final Deque<N> queue = new ArrayDeque<>();
         queue.add(source);
+        this.addVisited(source);
 
         while(!queue.isEmpty()){
-            final N firstNode = queue.remove();
-            if(!this.getVisited().contains(firstNode)){
-                this.addNodeOnPath(firstNode);
-                Set<N> nodes = g.linkedNodes(firstNode);
-                this.getVisited().add(firstNode);
-                
-                if(nodes.contains(target)){
-                    this.addNodeOnPath(target);
-                    return this.getFinalPath();
-                }
-                queue.addAll(nodes);
-            }        
-          
+            final N firstNode = queue.remove();        
+            this.addNodeOnPath(firstNode);
+            this.setAdiacents(g.linkedNodes(firstNode));
+            
+            for (N node : this.getAdiacents()) {
+                if(!this.getVisited().contains(node)){
+                    if(node.equals(target)){
+                        this.addNodeOnPath(target);
+                        return this.getFinalPath();
+                    }
+                }                     
+            }
+            this.addVisited(this.getAdiacents());
+            queue.addLast(this.getAdiacents().iterator().hasNext() ? this.getAdiacents().iterator().next() : null);   
+                         
         }
         return this.getFinalPath();
     }

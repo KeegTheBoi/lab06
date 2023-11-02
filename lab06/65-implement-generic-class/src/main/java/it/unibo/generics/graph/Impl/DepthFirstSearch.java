@@ -17,23 +17,20 @@ public class DepthFirstSearch<N> extends AbstractSearch<N> {
         stack.add(source);
 
         while(!stack.isEmpty()){
-            final N firstNode = stack.remove();
+            final N firstNode = stack.pop();
             if(!this.getVisited().contains(firstNode)){
                 this.addNodeOnPath(firstNode);
-                Set<N> nodes = g.linkedNodes(firstNode);
-                this.getVisited().add(firstNode);
-                
-                if(nodes.contains(target)){
-                    this.addNodeOnPath(target);
+                this.setAdiacents(g.linkedNodes(firstNode));
+                this.addVisited(firstNode);
+
+                if(firstNode.equals(target)){
                     return this.getFinalPath();
                 }
-                stack.push(;
+                stack.addAll(this.getAdiacents());
             }        
           
         }
         return this.getFinalPath();
-        
-        return null;
     }
     
 }
